@@ -11,7 +11,7 @@ export default class AbstractSource {
    * @type {import('./').SearchFunction}
    */
   single(options) {
-    throw new Error("Source doesn't implement single");
+    throw new Error("Source does not implement single");
   }
 
   /**
@@ -19,7 +19,7 @@ export default class AbstractSource {
    * @type {import('./').SearchFunction}
    */
   batch(options) {
-    throw new Error("Source doesn't implement batch");
+    throw new Error("Source does not implement batch");
   }
 
   /**
@@ -27,7 +27,7 @@ export default class AbstractSource {
    * @type {import('./').SearchFunction}
    */
   movie(options) {
-    throw new Error("Source doesn't implement movie");
+    throw new Error("Source does not implement movie");
   }
 
   /**
@@ -35,6 +35,6 @@ export default class AbstractSource {
    * @type {()=>Promise<boolean>}
    */
   test() {
-    throw new Error("Source doesn't implement test");
+    throw new Error("Source does not implement test");
   }
 }
