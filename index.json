@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Nyaa.si",
+    "id": "nyaa",
+    "version": "0.0.1",
+    "type": "torrent",
+    "accuracy": "medium",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "media": "sub",
+    "languages": ["ALL"],
+    "update": "gh:Windows-12UA/nyaa",
+    "code": "gh:Windows-12UA/nyaa/nyaa.js"
+  }
+]
