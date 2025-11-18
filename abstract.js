@@ -10,31 +10,31 @@ export default class AbstractSource {
    * Gets results for single episode
    * @type {import('./').SearchFunction}
    */
-  single(options) {
-    throw new Error("Source does not implement single");
+  single (options) {
+    throw new Error('Source doesn\'t implement single')
   }
 
   /**
    * Gets results for batch of episodes
    * @type {import('./').SearchFunction}
    */
-  batch(options) {
-    throw new Error("Source does not implement batch");
+  batch (options) {
+    throw new Error('Source doesn\'t implement batch')
   }
 
   /**
    * Gets results for a movie
    * @type {import('./').SearchFunction}
    */
-  movie(options) {
-    throw new Error("Source does not implement movie");
+  movie (options) {
+    throw new Error('Source doesn\'t implement movie')
   }
 
   /**
-   * Tests connection to source
+   * Gets results for a movie
    * @type {()=>Promise<boolean>}
    */
-  test() {
-    throw new Error("Source does not implement test");
+  test () {
+    throw new Error('Source doesn\'t implement test')
   }
 }
