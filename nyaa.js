@@ -1,18 +1,11 @@
 import AbstractSource from "./abstract.js";
 
-/**
- * @implements {import('./').TorrentSource}
- */
 export default class NyaaSource extends AbstractSource {
   constructor() {
     super();
     this.baseUrl = "https://nyaa.si";
   }
 
-  /**
-   * Test if the source is accessible
-   * @returns {Promise<boolean>}
-   */
   async test() {
     try {
       const response = await fetch(`${this.baseUrl}/`);
@@ -23,10 +16,6 @@ export default class NyaaSource extends AbstractSource {
     }
   }
 
-  /**
-   * Parse torrent info from HTML element
-   * @private
-   */
   parseTorrent(element, query) {
     try {
       const titleMatch = element.match(/title=".+?">(.+?)<\/a>/);
@@ -48,16 +37,19 @@ export default class NyaaSource extends AbstractSource {
       const title = titleMatch[1];
       const seeders = parseInt(updateMatch[2]) || 0;
       const leechers = parseInt(updateMatch[3]) || 0;
-
       const viewUrl = urlMatch[1];
 
       let sizeInBytes = 0;
       if (sizeMatch) {
-        const [, sizeStr] = sizeMatch;
+        const sizeStr = sizeMatch[1];
         const sizeNum = parseFloat(sizeStr);
-        if (sizeStr.includes("GiB")) sizeInBytes = sizeNum * 1024 * 1024 * 1024;
-        else if (sizeStr.includes("MiB")) sizeInBytes = sizeNum * 1024 * 1024;
-        else if (sizeStr.includes("KiB")) sizeInBytes = sizeNum * 1024;
+        if (sizeStr.includes("GiB")) {
+          sizeInBytes = sizeNum * 1024 * 1024 * 1024;
+        } else if (sizeStr.includes("MiB")) {
+          sizeInBytes = sizeNum * 1024 * 1024;
+        } else if (sizeStr.includes("KiB")) {
+          sizeInBytes = sizeNum * 1024;
+        }
       }
 
       const accuracy = this.calculateAccuracy(title, query);
@@ -78,34 +70,30 @@ export default class NyaaSource extends AbstractSource {
     }
   }
 
-  /**
-   * Calculate accuracy of match
-   * @private
-   */
   calculateAccuracy(title, query) {
     const titleLower = title.toLowerCase();
     const matchedTitles = query.titles.filter((t) =>
       titleLower.includes(t.toLowerCase())
     );
 
-    if (matchedTitles.length === 0) return "low";
+    if (matchedTitles.length === 0) {
+      return "low";
+    }
 
     if (query.episode) {
       const episodePattern = new RegExp(
         `(?:e|episode|ep)\\s*0*${query.episode}(?!\\d)`,
         "i"
       );
-      if (episodePattern.test(title)) return "high";
+      if (episodePattern.test(title)) {
+        return "high";
+      }
       return "medium";
     }
 
     return "medium";
   }
 
-  /**
-   * Get torrent details from view page
-   * @private
-   */
   async getTorrentDetails(viewUrl) {
     try {
       const response = await fetch(`${this.baseUrl}${viewUrl}`);
@@ -127,10 +115,6 @@ export default class NyaaSource extends AbstractSource {
     }
   }
 
-  /**
-   * Search and parse results
-   * @private
-   */
   async searchNyaa(searchQuery, filter = "1_2") {
     try {
       const url = `${this.baseUrl}/?f=0&c=${filter}&q=${encodeURIComponent(
@@ -149,12 +133,8 @@ export default class NyaaSource extends AbstractSource {
     }
   }
 
-  /**
-   * Build search query from TorrentQuery
-   * @private
-   */
   buildSearchQuery(query) {
-    let searchTerms = [query.titles[0]];
+    const searchTerms = [query.titles[0]];
 
     if (query.episode) {
       searchTerms.push(query.episode.toString().padStart(2, "0"));
@@ -167,10 +147,6 @@ export default class NyaaSource extends AbstractSource {
     return searchTerms.join(" ");
   }
 
-  /**
-   * Gets results for single episode
-   * @type {import('./').SearchFunction}
-   */
   async single(query, options = {}) {
     const searchQuery = this.buildSearchQuery(query);
     const elements = await this.searchNyaa(searchQuery, "1_2");
@@ -178,9 +154,12 @@ export default class NyaaSource extends AbstractSource {
     const results = [];
     for (const element of elements.slice(0, 10)) {
       const parsed = this.parseTorrent(element, query);
-      if (!parsed) continue;
+      if (!parsed) {
+        continue;
+      }
 
       if (
+        query.exclusions &&
         query.exclusions.some((ex) =>
           parsed.title.toLowerCase().includes(ex.toLowerCase())
         )
@@ -207,10 +186,6 @@ export default class NyaaSource extends AbstractSource {
     return results.sort((a, b) => b.seeders - a.seeders);
   }
 
-  /**
-   * Gets results for batch of episodes
-   * @type {import('./').SearchFunction}
-   */
   async batch(query, options = {}) {
     const searchQuery =
       query.titles[0] +
@@ -221,16 +196,19 @@ export default class NyaaSource extends AbstractSource {
     const results = [];
     for (const element of elements.slice(0, 10)) {
       const parsed = this.parseTorrent(element, query);
-      if (!parsed) continue;
+      if (!parsed) {
+        continue;
+      }
 
-      if (
-        !parsed.title.toLowerCase().includes("batch") &&
-        !parsed.title.match(/\d+-\d+/)
-      ) {
+      const isBatch =
+        parsed.title.toLowerCase().includes("batch") ||
+        parsed.title.match(/\d+-\d+/);
+      if (!isBatch) {
         continue;
       }
 
       if (
+        query.exclusions &&
         query.exclusions.some((ex) =>
           parsed.title.toLowerCase().includes(ex.toLowerCase())
         )
@@ -257,10 +235,6 @@ export default class NyaaSource extends AbstractSource {
     return results.sort((a, b) => b.seeders - a.seeders);
   }
 
-  /**
-   * Gets results for a movie
-   * @type {import('./').SearchFunction}
-   */
   async movie(query, options = {}) {
     const searchQuery = this.buildSearchQuery(query) + " movie";
     const elements = await this.searchNyaa(searchQuery, "1_2");
@@ -268,9 +242,12 @@ export default class NyaaSource extends AbstractSource {
     const results = [];
     for (const element of elements.slice(0, 10)) {
       const parsed = this.parseTorrent(element, query);
-      if (!parsed) continue;
+      if (!parsed) {
+        continue;
+      }
 
       if (
+        query.exclusions &&
         query.exclusions.some((ex) =>
           parsed.title.toLowerCase().includes(ex.toLowerCase())
         )
